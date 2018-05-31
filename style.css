@@ -9,6 +9,7 @@
 }
 
 body {
+    /*background-image: url(images/sounds.png);*/
     box-sizing: border-box;
     margin: 0;
 }
@@ -168,6 +169,10 @@ button {
     background-size: cover;
     height: 20px;
     width: 20px;
+}
+
+.bottom-box {
+   
 }
 
 @media(max-width: 640px){
