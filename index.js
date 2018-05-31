@@ -1,11 +1,21 @@
-var title = $('#title-input').val();
-var body = $('#body-input').val();
-var qualityVariable = "swill";
+PageLoad();
+
 
 $(".bottom-box").on('click', '.delete-button', deleteCard);
 $(".bottom-box").on('click', '.upvote', upVote);
 $(".bottom-box").on('click', '.downvote', downVote);
+$(".bottom-box").on('keyup', 'li .title-of-card', editTitle);
+$(".bottom-box").on('keyup', 'li .body-of-card', editBody);
 $('.save-btn').on('click', getCardInfo); 
+
+
+ function PageLoad() {
+    for (var i = 0; i < localStorage.length; i++) {
+      string = localStorage.getItem(localStorage.key(i));
+      object = JSON.parse(string);
+      makeCard(object);
+    };
+  };
 
 
 // var newCard = function(idea) {
@@ -40,7 +50,7 @@ function CardObject(object) {
 
 function getCardInfo(event) {
     event.preventDefault();
-    if ($('#title-input').val() === "" || $('#body-input').val() === "") {
+    if ($('#title-input').val() === '' || $('#body-input').val() === '') {
        return false;
     };  
 
@@ -51,18 +61,18 @@ function getCardInfo(event) {
 
     var card = new CardObject({id: id, title: title, body: body, quality: quality});
 
-    prependCard(card);
+    makeCard(card);
     localStoredCard(card,id);
     clearInputFields();
     // $('form')[0].reset();
 };
 
 // var newCard = function(idea) {
-//     return '<div id="${idea.id}"class="card-container"><h2 class="title-of-card">'  
-//             + title +  '</h2>'
+//     return '<div id="${object.id}"class="card-container"><h2 class="title-of-card">'  
+//             + title` ${object.title}` '</h2>'
 //             + '<button class="delete-button"></button>'
 //             +'<p class="body-of-card">'
-//             + body + '</p>'
+//             + body + ${object.body}'</p>'
 //             + '<button class="upvote"></button>' 
 //             + '<button class="downvote"></button>' 
 //             + '<p class="quality">' + 'quality:' + '<span class="qualityVariable">'  '</span>' + '</p>'
@@ -71,7 +81,7 @@ function getCardInfo(event) {
 // };
 
 
-function prependCard(object) {
+function makeCard(object) {
     $(".bottom-box").prepend(`
     <li id=${object.id} class="card-container">
       <header class="idea-head">
@@ -110,15 +120,10 @@ function localStoredCard(card,id) {
   localStorage.setItem(id, stringifiedCard);
 }
 
-function pullLocalStoredCard(id) {
-    // var id = $(this).closest('li').attr('id');
-    // console.log('this ;' + $(this).closest('li').attr('id'))
-    console.log("pulllocalstoredcard id: " + id);
-    string = localStorage.getItem(id);
-    object = JSON.parse(string);
-    console.log('String from pull: ' + string);
-    console.log('Object from pull: ' + object);
-  };
+// function pullLocalStoredCard(id) {
+//     var string = localStorage.getItem(id);
+//     var object = JSON.parse(string);
+//   };
 
 // function makeCard(event) {
 //     event.preventDefault();
@@ -133,39 +138,92 @@ function pullLocalStoredCard(id) {
 // };
 
 function upVote() {
+    id = $(this).closest('li').attr('id');
     var currentQuality = ($(this).siblings('p').children('span.quality-judgment').text().trim());
-    console.log('ID UpVote: ' + id);
+    console.log('id: ' + id);
+    console.log('pulled object: ' + pullLocalStoredCard(id));
+
     pullLocalStoredCard(id);
-    // var qualityVariable;
-    console.log('object id: ' + id);
-    console.log('object.quality ' + object.quality);
     if (currentQuality === "swill") {
             object.quality = "plausaible";
-            $($(this).siblings('p').children('span.quality-judgment').text(quality));
+            $($(this).siblings('p').children('span.quality-judgment').text(object.quality));
                
         } else if (currentQuality === "plausaible") {
             object.quality = "genius";
-            $($(this).siblings('p').children('span.quality-judgment').text(quality));
+            $($(this).siblings('p').children('span.quality-judgment').text(object.quality));
     }
-    console.log('upvote quality: ' + quality);
-    console.log('upVote Id: ' + id);
     updateStorage(object);
+    // string = JSON.stringify(object);
+    // localStorage.setItem(id, string);
 }
 
-function updateStorage() {
-    // var id = $(this).closest('li').attr('id');
-    console.log('ID: ' + id);
-    console.log('object: ' + object);
-    string = JSON.stringify(object);
-    console.log('string object: ' + string);
-    localStorage.setItem(id, string);
-  };
-  
 
 
 function downVote(event) {
-    console.log('down vote function');
+    id = $(this).closest('li').attr('id');
+    var currentQuality = ($(this).siblings('p').children('span.quality-judgment').text().trim());
+    pullLocalStoredCard(id);
+    if (currentQuality === "genius") {
+            object.quality = "plausaible";
+            $($(this).siblings('p').children('span.quality-judgment').text(object.quality));  
+        } else if (currentQuality === "plausaible") {
+            object.quality = "swill";
+            $($(this).siblings('p').children('span.quality-judgment').text(object.quality));
+    }
+    // updateStorage(object);
+    string = JSON.stringify(object);
+    localStorage.setItem(id, string);
 }
+
+function updateStorage(id, object) {
+    string = JSON.stringify(object);
+    localStorage.setItem(id, string);
+
+};
+
+function pullLocalStoredCard(id) {
+    var string = localStorage.getItem(id);
+    var object = JSON.parse(string);
+    return object;
+  };
+
+function editTitle() {
+    var title = $(this).text();
+    var foundId = pullLocalStoredCard(object.id);
+    foundId.title = title;
+    console.log('edited title: ' + foundId.title);
+    updateStorage(object.id, foundId);
+  };
+
+function editBody() {
+    var body = $(this).text();
+    var foundId = pullLocalStoredCard(object.id);
+    foundId.body = body;
+    console.log('edited body: ' + foundId.body);
+    updateStorage(object.id, foundId);
+    
+    // body = $(this).text();
+    // pullLocalStoredCard(this);
+    // object.body = body;
+    // updateStorage(object);
+}
+
+function deleteCard(event) {
+    $(this).parent().parent().remove();
+    var id = $(this).closest('li').attr('id');
+    var cardHTML = $(this).closest('.card-container').remove();
+    localStorage.removeItem(cardHTML[0].id);
+ }
+      
+function clearInputFields() {
+    $('#title-input').val('');
+    $('#body-input').val('');
+}
+
+
+
+
+
 
 // function qualityCheck(event) {
 //     var currentQuality = $($(this).siblings('p.quality').children()[0]).text().trim();
@@ -205,22 +263,6 @@ function downVote(event) {
 //     localStorage.setItem(cardHTMLId, newCardJSON);
 // } 
    
-
-
-function deleteCard(event) {
-    $(this).parent().parent().remove();
-    var id = $(this).closest('li').attr('id');
-    var cardHTML = $(this).closest('.card-container').remove();
-    var cardHTMLId = cardHTML[0].id;
-    localStorage.removeItem(cardHTMLId);
- }
-      
-function clearInputFields() {
-    $('#title-input').val('');
-    $('#body-input').val('');
-}
-
-
 
 
 
